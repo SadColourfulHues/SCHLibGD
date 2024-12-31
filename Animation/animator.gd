@@ -1,6 +1,6 @@
 ## A high-level controller for AnimationTree-based animators
-## (Note: the purpose of this node is to provide an (often) faster-to-setup alternative to
-## creating blend trees, one that DOESN'T include the graph editor
+## (Note: the purpose of this node is to provide an -often- faster-to-setup alternative to
+## creating blend trees, or as an added utility for editor-pregenerated ones.)
 @tool
 class_name Animator
 extends AnimationTree
@@ -12,6 +12,7 @@ var editor_pregen_button = __editor_generate_tree_action
 var p_parts: Array[AnimatorPart]
 
 var p_key_paths: Dictionary[StringName, StringName]
+var p_action_lengths: Dictionary[StringName, float]
 
 
 #region Events
@@ -26,7 +27,25 @@ func _ready() -> void:
 
 #endregion
 
-#region Main Functions
+#region Functions
+
+## Returns the length of the specified animation track
+## (Note: use the actual animation name -- including its library -- instead of the action key)
+func get_action_length(action_id: StringName) -> float:
+    var cached_length: float = p_action_lengths.get(action_id, -1.0)
+
+    if cached_length != -1.0:
+        return cached_length
+
+    if !has_animation(action_id):
+        print_debug("Animator: tried to get length of nonexistent action \"%s\"" % action_id)
+        return 0.0
+
+    var length := get_animation(action_id).length
+    p_action_lengths[action_id] = length
+
+    return length
+
 
 ## Generates a blend tree and clears the parts array
 func generate(root_id_override: StringName = &"") -> void:
