@@ -5,6 +5,7 @@ signal pressed(action_id: StringName)
 signal tick(action_id: StringName)
 signal released(action_id: StringName)
 
+var m_block_requested: bool
 var p_actions: Dictionary[StringName, bool]
 
 
@@ -28,6 +29,11 @@ func track(action_id: StringName) -> void:
 func untrack(action_id: StringName) -> void:
     p_actions.erase(action_id)
 
+
+## Prevents the current input state from changing in the current evaluation
+func block() -> void:
+    m_block_requested = true
+
 #endregion
 
 #region Events
@@ -46,6 +52,11 @@ func _process(_delta: float) -> void:
 
         elif current_state && !action_pressed_state:
             released.emit(action_id)
+
+        # Allow certain events to be held until a condition is satisfied
+        if m_block_requested:
+            m_block_requested = false
+            continue
 
         # Update value #
         p_actions[action_id] = action_pressed_state
