@@ -164,3 +164,79 @@ func lerp_time_scale(id: StringName, fac: float, weight: float = 0.1) -> void:
 
 
 #endregion
+
+#region Animated
+
+func tween_blend(id: StringName,
+                fac: float,
+                duration: float = 0.33,
+                ease_type := Tween.EaseType.EASE_IN,
+                trans_type := Tween.TransitionType.TRANS_SINE) -> Tween:
+
+    var key: String = __get_key(id, &"parameters/%s/blend_amount")
+    var tween := create_tween()
+
+    (
+        tween.tween_property(self, key, fac, duration)
+            .set_ease(ease_type)
+            .set_trans(trans_type)
+    )
+
+    return tween
+
+
+func tween_blendspace(id: StringName,
+                fac: float,
+                duration: float = 0.33,
+                ease_type := Tween.EaseType.EASE_IN,
+                trans_type := Tween.TransitionType.TRANS_SINE) -> Tween:
+
+    var key: String = __get_key(id, &"parameters/%s/blend_position")
+    var tween := create_tween()
+
+    (
+        tween.tween_property(self, key, fac, duration)
+            .set_ease(ease_type)
+            .set_trans(trans_type)
+    )
+
+    return tween
+
+
+func tween_blendspace_2d(id: StringName,
+                fac: Vector2,
+                duration: float = 0.33,
+                ease_type := Tween.EaseType.EASE_IN,
+                trans_type := Tween.TransitionType.TRANS_SINE) -> Tween:
+
+    var key: String = __get_key(id, &"parameters/%s/blend_position")
+    var tween := create_tween()
+
+    (
+        tween.tween_property(self, key, fac, duration)
+            .set_ease(ease_type)
+            .set_trans(trans_type)
+    )
+
+    return tween
+
+
+func tween_time_scale(id: StringName,
+                fac: float,
+                duration: float = 0.33,
+                ease_type := Tween.EaseType.EASE_IN,
+                trans_type := Tween.TransitionType.TRANS_SINE) -> Tween:
+
+    var key: String = __get_key(id, &"parameters/%s/scale")
+    var tween := create_tween()
+
+    (
+        tween.tween_property(self, key, fac, duration)
+            .set_ease(ease_type)
+            .set_trans(trans_type)
+    )
+
+    return tween
+
+
+#endregion

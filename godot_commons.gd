@@ -61,6 +61,11 @@ static func xzfhexpdecay(a: Vector3,
 static func shortest_angle(from: float, to: float) -> float:
 	return from + angle_difference(from, to)
 
+
+# Adapted from https://forum.unity.com/threads/left-right-test-function.31420/
+func sideness_test(forward: Vector3, look_dir: Vector3, up := Vector3.UP) -> float:
+	return forward.cross(look_dir).dot(up) > 0.0
+
 #endregion
 
 #region Random
