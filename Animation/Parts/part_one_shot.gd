@@ -61,21 +61,50 @@ func connect_inputs(previous_id: StringName, root: AnimationNodeBlendTree) -> vo
 
 func with_fade_in(time: float, curve: Curve = null) -> AnimatorPartOneShot:
 	m_fade_in = time
-
-	if curve != null:
-		m_custom_fade_in_curve = curve
+	m_custom_fade_in_curve = curve
 
 	return self
 
 
 func with_fade_out(time: float, curve: Curve = null) -> AnimatorPartOneShot:
 	m_fade_out = time
-
-	if curve != null:
-		m_custom_fade_out_curve = curve
+	m_custom_fade_out_curve = curve
 
 	return self
 
+
+func with_fade(fade_in: float,
+			fade_out: float,
+			in_curve: Curve = null,
+			out_curve: Curve = null) -> AnimatorPartOneShot:
+
+	m_fade_in = fade_in
+	m_fade_out = fade_out
+
+	m_custom_fade_in_curve = in_curve
+	m_custom_fade_out_curve = out_curve
+
+	return self
+
+
+#endregion
+
+#region Utils
+
+## Creates a one-shot part using a specified action name
+static func from(action_id: StringName, fade_in: float = 0.15, fade_out: float = 0.2) -> AnimatorPartOneShot:
+	return (
+		AnimatorPartOneShot.new(action_id, null, AnimatorInputAnimation.new(action_id))
+			.with_fade(fade_in, fade_out)
+	)
+
+
+## Convenient constructor similar to AnimatorPartOneShot::[from], but with a separate ID
+static func from_with_id(id: StringName, action_id: StringName, fade_in: float = 0.15, fade_out: float = 0.2) -> AnimatorPartOneShot:
+	return (
+		AnimatorPartOneShot.new(id, null, AnimatorInputAnimation.new(action_id))
+			.with_fade(fade_in, fade_out)
+	)
 
 #endregion
 
