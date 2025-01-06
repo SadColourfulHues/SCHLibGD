@@ -1,4 +1,4 @@
-## Defines a component for blending two animation parts together
+## Defines a component for blending three animation parts together
 @tool
 class_name AnimatorPartBlend3
 extends AnimatorPart
