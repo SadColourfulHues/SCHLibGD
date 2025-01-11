@@ -16,9 +16,9 @@ var m_default_value: float
 
 #region Part
 
-func _init(id: StringName = &"", from: AnimatorInput = null, to: AnimatorInput = null) -> void:
+func _init(id: StringName = &"", from_: AnimatorInput = null, to: AnimatorInput = null) -> void:
 	m_id = id
-	m_from = from
+	m_from = from_
 	m_to = to
 
 	m_default_value = 0.0
@@ -35,6 +35,33 @@ func connect_inputs(previous_id: StringName, root: AnimationNodeBlendTree) -> vo
 
 func apply_default_value(animator: AnimationTree) -> void:
 	animator.set(&"parameters/%s/blend_amount" % m_id, m_default_value)
+
+#endregion
+
+#region Properties
+
+func default_value(value: float) -> AnimatorPartBlend2:
+	m_default_value = value
+	return self
+
+#endregion
+
+#region Utils
+
+## Creates a blend2 using the specified animation IDs
+static func from(id: StringName,
+				a_id: StringName,
+				b_id: StringName,
+				def_value: float = 0.0) -> AnimatorPartBlend2:
+
+	return (
+		AnimatorPartBlend2.new(
+			id,
+			AnimatorInputAnimation.new(a_id),
+			AnimatorInputAnimation.new(b_id)
+		)
+		.default_value(def_value)
+	)
 
 #endregion
 

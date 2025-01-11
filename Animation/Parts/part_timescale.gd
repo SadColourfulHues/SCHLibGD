@@ -32,6 +32,14 @@ func apply_default_value(animator: AnimationTree) -> void:
 
 #endregion
 
+#region Properties
+
+func default_value(value: float) -> AnimatorPartTimeScale:
+	m_default_value = value
+	return self
+
+#endregion
+
 #region Resource Name
 
 func _validate_property(property: Dictionary) -> void:
