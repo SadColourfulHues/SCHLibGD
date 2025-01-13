@@ -8,7 +8,7 @@ extends AnimatorPart
 var m_input: AnimatorInput
 
 @export
-var m_default_value := 1.0
+var m_default_value: float
 
 
 #region Part
@@ -16,6 +16,7 @@ var m_default_value := 1.0
 func _init(id: StringName = &"", input: AnimatorInput = null) -> void:
 	m_id = id
 	m_input = input
+	m_default_value = 1.0
 
 
 func generate(_animator: AnimationTree) -> AnimationNode:
@@ -26,9 +27,8 @@ func connect_inputs(previous_id: StringName, root: AnimationNodeBlendTree) -> vo
 	__connect_as_input(previous_id, root, m_input, 0)
 
 
-func apply_default_value(animator: AnimationTree) -> void:
-	animator.set(&"parameters/%s/scale" % m_id, m_default_value)
-
+func apply_default_value(animator: Animator) -> void:
+	animator.set_time_scale(m_id, m_default_value)
 
 #endregion
 

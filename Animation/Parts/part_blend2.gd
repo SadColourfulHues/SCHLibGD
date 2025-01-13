@@ -33,8 +33,8 @@ func connect_inputs(previous_id: StringName, root: AnimationNodeBlendTree) -> vo
 	__connect(root, m_to, 1)
 
 
-func apply_default_value(animator: AnimationTree) -> void:
-	animator.set(&"parameters/%s/blend_amount" % m_id, m_default_value)
+func apply_default_value(animator: Animator) -> void:
+	animator.set_blend(m_id, m_default_value)
 
 #endregion
 

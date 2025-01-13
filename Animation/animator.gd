@@ -18,11 +18,10 @@ var p_action_lengths: Dictionary[StringName, float]
 #region Events
 
 func _ready() -> void:
-	if Engine.is_editor_hint():
+	if Engine.is_editor_hint() || p_parts.is_empty():
 		return
 
-	apply_default_values()
-	p_parts.clear()
+	generate()
 
 
 #endregion
@@ -74,36 +73,45 @@ func generate(root_id_override: StringName = &"") -> void:
 	else:
 		root.connect_node(&"output", 0, root_id_override)
 
-	apply_default_values()
+	for part: AnimatorPart in p_parts:
+		part.apply_default_value.call_deferred(self)
 
 	if !Engine.is_editor_hint():
-		p_parts.clear()
+		p_parts.clear.call_deferred()
 
 	tree_root = root
 
 
-## Sets parameters to their default value
-func apply_default_values() -> void:
-	for part: AnimatorPart in p_parts:
-		part.apply_default_value(self)
-
-
 ## Fades out all one-shot actions except the specified ID (setting it to empty fades everything)
 func action_fade_except(action_id: StringName = &"") -> void:
+	var path = &"" if action_id.is_empty() else __get_key(action_id, &"parameters/%s/request")
+
 	for id: StringName in p_key_paths:
-		if !id.ends_with(&"request") || (!id.is_empty() && id.contains(action_id)):
+		if !id.ends_with(&"request"):
 			continue
 
-		set(__get_key(id, &"parameters/%s/request"), AnimationNodeOneShot.ONE_SHOT_REQUEST_FADE_OUT)
+		var other_path := __get_key(id, &"parameters/%s/request")
+
+		if path == other_path:
+			continue
+
+		set(other_path, AnimationNodeOneShot.ONE_SHOT_REQUEST_FADE_OUT)
 
 
 ## Aborts all one-shot actions except the specified ID (setting it to empty stops everything)
 func action_stop_except(action_id: StringName = &"") -> void:
+	var path = &"" if action_id.is_empty() else __get_key(action_id, &"parameters/%s/request")
+
 	for id: StringName in p_key_paths:
-		if !id.ends_with(&"request") || (!id.is_empty() && id.contains(action_id)):
+		if !id.ends_with(&"request"):
 			continue
 
-		set(__get_key(id, &"parameters/%s/request"), AnimationNodeOneShot.ONE_SHOT_REQUEST_ABORT)
+		var other_path := __get_key(id, &"parameters/%s/request")
+
+		if path == other_path:
+			continue
+
+		set(other_path, AnimationNodeOneShot.ONE_SHOT_REQUEST_ABORT)
 
 
 #endregion

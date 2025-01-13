@@ -10,11 +10,17 @@ var p_points: Dictionary[StringName, Vector2]
 @export
 var m_default_value: float
 
+@export
+var m_default_value_2d: Vector2
+
 
 #region Part
 
 func _init(id: StringName = &"", points: Dictionary[StringName, Vector2] = {}) -> void:
 	m_id = id
+
+	m_default_value = 0.0
+	m_default_value_2d = Vector2.ZERO
 
 	if points.is_empty():
 		return
@@ -66,8 +72,25 @@ func generate(_animator: AnimationTree) -> AnimationNode:
 	return bspace2d
 
 
-func apply_default_value(animator: AnimationTree) -> void:
-	animator.set(&"parameters/%s/blend_position" % m_id, m_default_value)
+func apply_default_value(animator: Animator) -> void:
+	if is_1d:
+		animator.set_blendspace(m_id, m_default_value)
+		return
+
+	animator.set_blendspace_2d(m_id, m_default_value_2d)
+
+#endregion
+
+#region Properties
+
+func default_value(value: float) -> AnimatorPartBlendSpace:
+	m_default_value = value
+	return self
+
+
+func default_value_2d(value: Vector2) -> AnimatorPartBlendSpace:
+	m_default_value_2d = value
+	return self
 
 #endregion
 
