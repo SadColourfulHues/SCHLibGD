@@ -86,32 +86,28 @@ func generate(root_id_override: StringName = &"") -> void:
 func action_fade_except(action_id: StringName = &"") -> void:
 	var path = &"" if action_id.is_empty() else __get_key(action_id, &"parameters/%s/request")
 
-	for id: StringName in p_key_paths:
+	for id: StringName in p_key_paths.values():
 		if !id.ends_with(&"request"):
 			continue
 
-		var other_path := __get_key(id, &"parameters/%s/request")
-
-		if path == other_path:
+		if path == id:
 			continue
 
-		set(other_path, AnimationNodeOneShot.ONE_SHOT_REQUEST_FADE_OUT)
+		set(id, AnimationNodeOneShot.ONE_SHOT_REQUEST_FADE_OUT)
 
 
 ## Aborts all one-shot actions except the specified ID (setting it to empty stops everything)
 func action_stop_except(action_id: StringName = &"") -> void:
 	var path = &"" if action_id.is_empty() else __get_key(action_id, &"parameters/%s/request")
 
-	for id: StringName in p_key_paths:
+	for id: StringName in p_key_paths.values():
 		if !id.ends_with(&"request"):
 			continue
 
-		var other_path := __get_key(id, &"parameters/%s/request")
-
-		if path == other_path:
+		if path == id:
 			continue
 
-		set(other_path, AnimationNodeOneShot.ONE_SHOT_REQUEST_ABORT)
+		set(id, AnimationNodeOneShot.ONE_SHOT_REQUEST_ABORT)
 
 
 #endregion
