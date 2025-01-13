@@ -74,11 +74,12 @@ func generate(root_id_override: StringName = &"") -> void:
 	else:
 		root.connect_node(&"output", 0, root_id_override)
 
+	apply_default_values()
+
 	if !Engine.is_editor_hint():
 		p_parts.clear()
 
 	tree_root = root
-	apply_default_values.call_deferred()
 
 
 ## Sets parameters to their default value

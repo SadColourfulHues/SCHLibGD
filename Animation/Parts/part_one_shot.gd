@@ -55,6 +55,10 @@ func connect_inputs(previous_id: StringName, root: AnimationNodeBlendTree) -> vo
 	__connect(root, m_animation, 1)
 
 
+func apply_default_value(animator: Animator) -> void:
+	animator.action_stop(m_id)
+
+
 #endregion
 
 #region Properties
