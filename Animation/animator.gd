@@ -142,6 +142,10 @@ func action_fade_out(id: StringName) -> void:
 	set(__get_key(id, &"parameters/%s/request"), AnimationNodeOneShot.ONE_SHOT_REQUEST_FADE_OUT)
 
 
+func action_is_playing(id: StringName) -> bool:
+	return get(__get_key(id, &"parameters/%s/active"))
+
+
 func trans_set_state(id: StringName, state: StringName) -> void:
 	set(__get_key(id, &"parameters/%s/transition_request"), state)
 
