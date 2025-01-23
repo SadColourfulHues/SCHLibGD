@@ -1,3 +1,5 @@
+@warning_ignore_start("integer_division")
+
 ## A resource containing information for crafting recipes
 @tool
 class_name RecipeDefinition
@@ -16,7 +18,6 @@ var p_ingredients: Dictionary[StringName, int]
 #region Utils
 
 ## Returns true if the given item bag has all the ingredients needed to craft this recipe
-@warning_ignore("integer_division") # why is this even a warning to begin with??? /neg
 func can_craft(bag: ItemBag, multiplier: int = 1) -> bool:
     var item_def := bag.get_definition(m_output_id)
 
@@ -36,7 +37,6 @@ func can_craft(bag: ItemBag, multiplier: int = 1) -> bool:
 
 
 ## Performs the crafting action in the specified item bag
-@warning_ignore("integer_division")
 func craft(bag: ItemBag, multiplier: int = 1) -> bool:
     if !can_craft(bag, multiplier):
         return false

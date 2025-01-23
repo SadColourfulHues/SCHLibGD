@@ -28,3 +28,29 @@ static func iesetactioncallback(event: InputEvent,
 	viewport.set_input_as_handled()
 
 #endregion
+
+#region Audio
+
+## ([AudioStream3D]PlayWithFade)
+## Plays/pauses an [AudioStream3D] with a specified fade duration
+static func as3dplaywfade(sfx: AudioStreamPlayer3D,
+						playing: bool,
+						fade_duration: float = 0.45,
+						vol_playing: float = 0.0,
+						vol_stopped: float = -80.0) -> Tween:
+
+	if is_equal_approx(sfx.volume_db, vol_playing if playing else vol_stopped):
+		return null
+
+	if playing:
+		sfx.play()
+
+	var tween := sfx.create_tween()
+	tween.tween_property(sfx, ^"volume_db", vol_playing if vol_stopped else vol_stopped, fade_duration)
+
+	if !playing:
+		tween.tween_callback(sfx.stop)
+
+	return tween
+
+#endregion

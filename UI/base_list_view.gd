@@ -1,3 +1,5 @@
+@warning_ignore_start("unused_parameter")
+
 ## A base-class for list-like UIs
 class_name BaseListView
 extends Control
@@ -51,7 +53,6 @@ func _list_get_count() -> int:
 
 ## The return value of this function determines the data to be used when updating
 ## the cell at the specified index
-@warning_ignore("unused_parameter")
 func _list_get_data(i: int) -> Variant:
     return null
 

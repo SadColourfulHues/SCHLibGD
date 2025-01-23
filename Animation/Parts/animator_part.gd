@@ -1,3 +1,5 @@
+@warning_ignore_start("unused_parameter")
+
 ## Base class for parts used to create an animation tree
 class_name AnimatorPart
 extends Resource
@@ -9,17 +11,14 @@ var m_id: StringName
 #region Part
 
 ## Use this function to generate the animation node associated with this part
-@warning_ignore("unused_parameter")
 func generate(animator: Animator) -> AnimationNode:
 	return AnimationNode.new()
 
 ## Use this function to generate the node's inputs and connect them to their respective ports
-@warning_ignore("unused_parameter")
 func connect_inputs(previous_id: StringName, root: AnimationNodeBlendTree) -> void:
 	pass
 
 ## Use this function to set the associated node's default value
-@warning_ignore("unused_parameter")
 func apply_default_value(animator: Animator) -> void:
 	pass
 

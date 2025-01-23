@@ -1,3 +1,5 @@
+@warning_ignore_start("unused_parameter")
+
 ## Base class for BaseListView cells
 class_name BaseListCell
 extends Control
@@ -43,7 +45,6 @@ func _cell_init() -> void:
 ## (Note: [data] is untyped to allow subclasses to be able to add type hints
 ## for the data they're supposed to be used with.)
 ## (e.g. `_cell_configure(data: ItemEntry)`)
-@warning_ignore("unused_parameter")
 func _cell_configure(data) -> void:
     pass
 
