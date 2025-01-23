@@ -46,7 +46,7 @@ static func as3dplaywfade(sfx: AudioStreamPlayer3D,
 		sfx.play()
 
 	var tween := sfx.create_tween()
-	tween.tween_property(sfx, ^"volume_db", vol_playing if vol_stopped else vol_stopped, fade_duration)
+	tween.tween_property(sfx, ^"volume_db", vol_playing if playing else vol_stopped, fade_duration)
 
 	if !playing:
 		tween.tween_callback(sfx.stop)
