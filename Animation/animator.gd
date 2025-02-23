@@ -1,4 +1,4 @@
-## A high-level controller for AnimationTree-based animators
+## A high-level controller for blend-tree based animators
 ## (Note: the purpose of this node is to provide an -often- faster-to-setup alternative to
 ## creating blend trees, or as an added utility for editor-pregenerated ones.)
 @tool
@@ -14,17 +14,8 @@ var p_parts: Array[AnimatorPart]
 var p_key_paths: Dictionary[StringName, StringName]
 var p_action_lengths: Dictionary[StringName, float]
 
+var p_original_root: AnimationNodeBlendTree = null
 
-#region Events
-
-func _ready() -> void:
-	if Engine.is_editor_hint() || p_parts.is_empty():
-		return
-
-	generate()
-
-
-#endregion
 
 #region Functions
 
@@ -46,35 +37,77 @@ func get_action_length(action_id: StringName) -> float:
 	return length
 
 
+## @experimental: partial generation is currently experimental
 ## Generates a blend tree and clears the parts array
-func generate(root_id_override: StringName = &"") -> void:
+## [param gen_root_id]
+## The name of the part to use as the root of the
+## generated nodes.
+## [param root_id]
+## When set, this method will be ran in partial-generation mode.
+## The newly-generated section will be attached to the node specified
+## by this parameter.
+## This can be used to add repetitive attachments to specialised blend
+## trees. e.g. generic actions mixed with specially-configured
+## blenders done in-editor.
+## (Note: partial generation expects a valid [[AnimationNodeBlendTree]] as
+## the tree's root. Additionally, nodes on the original tree will not have
+## their values pre-initialised: which may cause issues with lerp/tween
+## related functionality. Simply call the appropriate set_* method on them
+## to initialise them.)
+func generate(gen_root_id: StringName = &"",
+			  root_id: StringName = &"",
+			  root_connect_idx: int = 0) -> void:
+
 	var part_count := p_parts.size()
+	var partial_mode := !root_id.is_empty()
 
 	if part_count < 1:
 		printerr("Animator: warning: empty parts on tree generation")
 		return
 
-	# Prepare parts #
-	var root := AnimationNodeBlendTree.new()
+	# Prepare tree for generation #
+	var root: AnimationNodeBlendTree
 
+	if partial_mode:
+		# Keep the original tree in memory when using partial generation
+		# to allow for subsequent re-generations
+		if tree_root == null || tree_root is not AnimationNodeBlendTree:
+			printerr("Animator: to use partial-generation, ensure that there is a valid AnimationNodeBlendTree root set on this object.")
+			return
+
+		if p_original_root == null:
+			p_original_root = tree_root
+
+		root = p_original_root.duplicate()
+		root.disconnect_node(&"output", 0)
+	else:
+		root = AnimationNodeBlendTree.new()
+
+	# Pre-pass: generate nodes + inputs
 	for part: AnimatorPart in p_parts:
 		var node := part.generate(self)
 		root.add_node(part.m_id, node)
 
-	# Finalise inputs #
+	# Handle node connections
 	if part_count == 1:
 		p_parts[0].connect_inputs(&"", root)
 	else:
 		for i: int in range(part_count):
 			p_parts[i].connect_inputs(&"" if i == 0 else p_parts[i-1].m_id, root)
 
-	if root_id_override.is_empty():
-		root.connect_node(&"output", 0, p_parts[-1].m_id)
-	else:
-		root.connect_node(&"output", 0, root_id_override)
+	# Connect the 'root' of the generated nodes to the output
+	root.connect_node(
+		&"output",
+		0,
+		p_parts[-1].m_id if gen_root_id.is_empty() else gen_root_id
+	)
 
 	for part: AnimatorPart in p_parts:
 		part.apply_default_value.call_deferred(self)
+
+	# (partial-gen) join the old and new connectionss at the specified point
+	if partial_mode:
+		root.connect_node(p_parts[0].m_id, root_connect_idx, root_id)
 
 	if !Engine.is_editor_hint():
 		p_parts.clear.call_deferred()

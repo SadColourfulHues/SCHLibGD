@@ -56,6 +56,9 @@ func __connect_as_input(previous_id: StringName,
 					input: AnimatorInput,
 					port: int) -> void:
 
+	if previous_id.is_empty():
+		return
+
 	if is_instance_valid(input):
 		__connect(root, input, port)
 		return
