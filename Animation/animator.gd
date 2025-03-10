@@ -356,7 +356,7 @@ func dbaction_get_id(base_id: StringName, to_path: bool = true) -> StringName:
 	var id: StringName = DBA_FORMAT[1 if state else 0] % base_id
 
 	if to_path:
-		return __get_key( id, &"parameters/%s/request" )
+		return __get_key(id, &"parameters/%s/request")
 
 	return id
 
