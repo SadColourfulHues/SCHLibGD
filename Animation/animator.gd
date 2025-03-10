@@ -119,6 +119,11 @@ func generate(gen_root_id: StringName = &"",
 	tree_root = root
 
 
+## Gets the current positional root motion
+func get_root_motion(body: Node3D, delta: float, apply_rotation: bool = true) -> Vector3:
+	return Utils.atgetrootmotion(body, self, delta, apply_rotation)
+
+
 ## Fades out all one-shot actions except the specified ID (setting it to empty fades everything)
 func action_fade_except(action_id: StringName = &"") -> void:
 	var path = &"" if action_id.is_empty() else __get_key(action_id, &"parameters/%s/request")
