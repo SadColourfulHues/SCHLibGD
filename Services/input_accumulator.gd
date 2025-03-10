@@ -5,11 +5,21 @@ signal pressed(action_id: StringName)
 signal tick(action_id: StringName)
 signal released(action_id: StringName)
 
+@export
+var m_process_in_physics := false
+
 var m_block_requested: bool
 var p_actions: Dictionary[StringName, Data]
 
 
 #region Functions
+
+## Sets the input accumulator to run in [[_physics_process]]
+## Setting this to false will revert it back to [[_process]]
+func set_process_in_physics(physics_mode: bool = true) -> void:
+    set_process(!physics_mode)
+    set_physics_process(physics_mode)
+
 
 ## Returns true if the given action ID is being pressed
 ## (this method assumes that the action has already been registered using [track])
@@ -60,7 +70,22 @@ func block() -> void:
 
 #region Events
 
+func _ready() -> void:
+    set_process_in_physics(m_process_in_physics)
+
+
 func _process(_delta: float) -> void:
+    __process_main()
+
+
+func _physics_process(_delta: float) -> void:
+    __process_main()
+
+#endregion
+
+#region Utils
+
+func __process_main() -> void:
     for action_id: StringName in p_actions:
         var input_active := Input.is_action_pressed(action_id)
         var state := p_actions[action_id]
@@ -86,6 +111,7 @@ func _process(_delta: float) -> void:
 
         # Update value #
         state.m_active = input_active
+
 
 #endregion
 

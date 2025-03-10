@@ -5,11 +5,15 @@
 class_name Animator
 extends AnimationTree
 
+const DBA_FORMAT := [&"%s_a", &"%s_b"]
+
 @export_tool_button("Pre-Generate", "AnimationTree")
 var editor_pregen_button = __editor_generate_tree_action
 
 @export
 var p_parts: Array[AnimatorPart]
+
+var p_dbaction_state: Dictionary[StringName, bool]
 
 var p_key_paths: Dictionary[StringName, StringName]
 var p_action_lengths: Dictionary[StringName, float]
@@ -298,5 +302,62 @@ func tween_time_scale(id: StringName,
 
 	return tween
 
+
+#endregion
+
+#region Special Actions
+
+## ~ push_(doubly-backed)action ~
+## (use before [[generate]])
+## Adds two one shot nodes to allow certain actions to be played
+## back-to-back with crossfade support
+func dbaction_push(base_id: StringName,
+				   fade_in: float = 0.25,
+				   fade_out: float = 0.25) -> void:
+
+	if p_dbaction_state.has(base_id):
+		return
+
+	for dbid: StringName in DBA_FORMAT:
+		p_parts.append(
+			AnimatorPartOneShot.from_with_id(dbid % base_id, base_id, fade_in, fade_out)
+		)
+
+	p_dbaction_state[base_id] = false
+
+
+## Fires a doubly-backed action.
+## It must be first registered using [[dbaction_push]]
+func dbaction_fire(base_id: StringName) -> void:
+	var state: bool = p_dbaction_state[base_id]
+	var base_action := DBA_FORMAT[0] % base_id
+	var alt_action := DBA_FORMAT[1] % base_id
+
+	action_fade_out(base_action if state else alt_action)
+	action_fire(alt_action if state else base_action)
+
+	p_dbaction_state[base_id] = !state
+
+
+## Gets the current animation ID or
+## animation node path (OneShot request) for a doubly-backed action
+## (It must be first registered using [[dbaction_push]]
+## (This method flips its state once it has been called.)
+## (Use for custom action firing methods.)
+func dbaction_get_id(base_id: StringName, to_path: bool = true) -> StringName:
+	var state := p_dbaction_state[base_id]
+	p_dbaction_state[base_id] = !state
+
+	var id: StringName = DBA_FORMAT[1 if state else 0] % base_id
+
+	if to_path:
+		return __get_key( id, &"parameters/%s/request" )
+
+	return id
+
+
+## Returns true if the specified ID is a doubly-backed action
+func dbaction_is(base_id: StringName) -> bool:
+	return p_dbaction_state.has(base_id)
 
 #endregion
