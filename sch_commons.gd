@@ -29,6 +29,53 @@ static func iesetactioncallback(event: InputEvent,
 
 #endregion
 
+#region Animation
+
+## ([Animator]LockCreate)
+## Convenience method for initialising a lock timer to be used with
+## [[aplaywlock]]
+static func alockcreate(owner: Node) -> Timer:
+	var lock := Timer.new()
+	lock.one_shot = true
+
+	owner.add_child.call_deferred(lock)
+	return lock
+
+
+## ([Animator]PlayWithLock)
+## Handles Animator-based playback with support for doubly-backed actions
+## Use [true_id] for special setups where the node ID and animation ID
+## are not the same.
+static func aplaywlock(p_animator: Animator,
+					   p_lock: Timer,
+					   id: StringName,
+					   lock_mod: float = 1.0,
+					   fade_not_stop: bool = true,
+					   true_id: StringName = &"") -> void:
+
+	# Handle doubly-backed actions
+	if p_animator.dbaction_is(id):
+		aplaywlock(
+			p_animator, p_lock,
+			p_animator.dbaction_get_id(id, false),
+			lock_mod, fade_not_stop, id)
+		return
+
+	true_id = id if true_id.is_empty() else true_id
+
+	var anim_len := p_animator.get_action_length(true_id)
+	assert(anim_len > 0.0, "aplaywlock: ID \"%s\" doesn't exist" % true_id)
+
+	if fade_not_stop:
+		p_animator.action_fade_except(id)
+	else:
+		p_animator.action_stop_except(id)
+
+	p_animator.action_fire(id)
+	p_lock.start(anim_len * lock_mod)
+
+#endregion
+
 #region Audio
 
 ## ([AudioStream3D]PlayWithFade)
