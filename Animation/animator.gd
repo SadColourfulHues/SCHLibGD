@@ -212,6 +212,15 @@ func set_time_scale(id: StringName, scale: float) -> void:
 	set(__get_key(id, &"parameters/%s/scale"), scale)
 
 
+func seek(id: StringName, amount: float) -> void:
+	var key := __get_key(id, &"parameters/%s/seek_request")
+
+	if is_zero_approx(amount):
+		return
+
+	set(key, amount)
+
+
 func lerp_blend(id: StringName, fac: float, weight: float = 0.1) -> void:
 	var key := __get_key(id, &"parameters/%s/blend_amount")
 	return set(key, lerp(float(get(key)), fac, weight))
