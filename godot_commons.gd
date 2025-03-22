@@ -55,6 +55,15 @@ static func xzfhexpdecay(a: Vector3,
 	)
 
 
+## Returns the amount of time passed (in seconds) since [start]
+static func secs_since(start: int) -> float:
+	return 0.001 * float(Time.get_ticks_msec() - start)
+
+
+## Similar to [[secs_since]] but with a customisable [[now]] time
+static func secs_since_reuse(now: int, start: int) -> float:
+	return 0.001 * float(now - start)
+
 ## Returns the best angle between [from] and [to]
 ## (Intended to be used by tweeners)
 ## https://github.com/godotengine/godot/blob/92e51fca7247c932f95a1662aefc28aca96e8de6/core/math/math_funcs.h#L430
@@ -201,6 +210,29 @@ static func atosfade(tree: AnimationTree, path: StringName) -> void:
 ## ([AnimationTree]OneShotStop) Stops the specified OneShot node
 static func atosstop(tree: AnimationTree, path: StringName) -> void:
 	tree.set(path, AnimationNodeOneShot.ONE_SHOT_REQUEST_ABORT)
+
+
+## ([AnimationTree]Pause) Toggles an animation tree's paused state
+static func atpause(atree: AnimationTree,
+					paused: bool = true,
+					fallback_process_mode := Node.PROCESS_MODE_INHERIT) -> void:
+
+	if paused:
+		atree.set_meta(&"__original_process_state", atree.process_mode)
+		atree.process_mode = Node.PROCESS_MODE_DISABLED
+	else:
+		atree.process_mode = atree.get_meta(&"__original_process_state", fallback_process_mode)
+		atree.remove_meta(&"__original_process_state")
+
+	# Note: this section may not be needed,
+	# but just to be sure to fully deactivate it
+	# in case the tree object is doing some extra processing
+
+	atree.set_process(paused)
+	atree.set_physics_process(paused)
+	atree.set_process_internal(paused)
+	atree.set_physics_process_internal(paused)
+
 
 
 #endregion

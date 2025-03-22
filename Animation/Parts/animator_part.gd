@@ -56,14 +56,13 @@ func __connect_as_input(previous_id: StringName,
 					input: AnimatorInput,
 					port: int) -> void:
 
-	if previous_id.is_empty():
+	if !previous_id.is_empty():
+		root.connect_node(m_id, port, previous_id)
 		return
 
-	if is_instance_valid(input):
-		__connect(root, input, port)
+	if !is_instance_valid(input):
 		return
 
-	root.connect_node(m_id, port, previous_id)
-
+	__connect(root, input, port)
 
 #endregion
