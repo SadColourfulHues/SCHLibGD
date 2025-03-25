@@ -237,6 +237,46 @@ static func atpause(atree: AnimationTree,
 
 #endregion
 
+#region Nodes
+
+## [Node]ClearChildren
+## Removes all child nodes from [[node]]
+static func nchall(node: Node) -> void:
+	for child: Node in node.get_children():
+		child.queue_free()
+
+
+## [Node]ClearChildren2D
+## Removes all Node2D-based child nodes from [[node]]
+static func nch2d(node: Node) -> void:
+	for child: Node in node.get_children():
+		if child is not Node2D:
+			continue
+
+		child.queue_free()
+
+
+## [Node]ClearChildrenUI
+## Removes all Control-based child nodes from [[node]]
+static func nchui(node: Node) -> void:
+	for child: Node in node.get_children():
+		if child is not Control:
+			continue
+
+		child.queue_free()
+
+
+## [Node]ClearChildren3D
+## Removes all Node3D-based child nodes from [[node]]
+static func nch3d(node: Node) -> void:
+	for child: Node in node.get_children():
+		if child is not Node3D:
+			continue
+
+		child.queue_free()
+
+#endregion
+
 #region Resources
 
 ## ** [Resource] sync property to name **
