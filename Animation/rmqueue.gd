@@ -49,9 +49,9 @@ func _notification(what: int) -> void:
 #region Functions
 
 ## Will keep enqueue-ing root motion data until the next [[apply]]
-func update(delta: float) -> void:
+func update() -> void:
     __enqueue(
-        p_animator.get_root_motion_position() / delta,
+        p_animator.get_root_motion_position() / p_body.get_physics_process_delta_time(),
         p_animator.get_root_motion_rotation()
     )
 
