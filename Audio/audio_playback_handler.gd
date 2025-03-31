@@ -47,11 +47,11 @@ var m_2d_attenuation := 1.0
 @export_group("Configuration/3D")
 ## Maximum distance where a sound can be heard in 3D
 @export
-var m_3d_max_distance := 8.0
+var m_3d_max_distance := 15.0
 
 ## The unit size to base all 3D sound players on. (Higher values makes the sound audible over larger distances.)
 @export
-var m_3d_base_unit_size := 8.0
+var m_3d_base_unit_size := 10.0
 
 ## The attenuation model to use for 3D audio
 @export
@@ -63,11 +63,11 @@ var m_3d_attenuation_cutoff := 20500
 
 ## This value affects how much the attenuation filter affects the loudness in decibels
 @export
-var m_3d_attenuation_db := -80.0
+var m_3d_attenuation_db := -60.0
 
 ## The absolute maximum sound level in decibels
 @export
-var m_3d_max_decibels := 3.0
+var m_3d_max_decibels := 0.0
 
 #endregion
 

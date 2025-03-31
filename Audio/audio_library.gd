@@ -9,17 +9,16 @@ var p_entries: Dictionary[StringName, AudioItem]
 
 ## Returns the first AudioItem named [id]
 func get_audio_item(id: StringName) -> AudioItem:
-    if !p_entries.has(id):
-        return null
-
-    return p_entries[id]
+    return p_entries.get(id)
 
 
 ## Returns the AudioStream of the first AudioItem named [id]
 func get_stream(id: StringName) -> AudioStream:
-    if !p_entries.has(id):
+    var item: AudioItem = p_entries.get(id)
+
+    if item == null:
         return null
 
-    return p_entries[id].get_stream()
+    return item.get_stream()
 
 #endregion
