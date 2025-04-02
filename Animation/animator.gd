@@ -13,6 +13,9 @@ var editor_pregen_button = __editor_generate_tree_action
 @export
 var p_parts: Array[AnimatorPart]
 
+@export
+var m_bl_snap_override := Utils.DEFAULT_LSNAP_EDGE
+
 var p_dbaction_state: Dictionary[StringName, bool]
 
 var p_key_paths: Dictionary[StringName, StringName]
@@ -223,15 +226,30 @@ func seek(id: StringName, amount: float) -> void:
 
 func lerp_blend(id: StringName, fac: float, weight: float = 0.1) -> void:
 	var key := __get_key(id, &"parameters/%s/blend_amount")
-	return set(key, lerp(float(get(key)), fac, weight))
+	return set(key, Utils.blsnap(float(get(key)), fac, weight, m_bl_snap_override))
 
 
 func lerp_blendspace(id: StringName, fac: float, weight: float = 0.1) -> void:
 	var key := __get_key(id, &"parameters/%s/blend_position")
-	return set(key, lerp(float(get(key)), fac, weight))
+	return set(key, Utils.blsnap(float(get(key)), fac, weight, m_bl_snap_override))
 
 
 func lerp_blendspace_2d(id: StringName, fac: Vector2, weight: float = 0.1) -> void:
+	var key := __get_key(id, &"parameters/%s/blend_position")
+	return set(key, Utils.v2blsnap(get(key), fac, weight, m_bl_snap_override))
+
+
+func lerpnosnap_blend(id: StringName, fac: float, weight: float = 0.1) -> void:
+	var key := __get_key(id, &"parameters/%s/blend_amount")
+	return set(key, lerp(float(get(key)), fac, weight))
+
+
+func lerpnosnap_blendspace(id: StringName, fac: float, weight: float = 0.1) -> void:
+	var key := __get_key(id, &"parameters/%s/blend_position")
+	return set(key, lerp(float(get(key)), fac, weight))
+
+
+func lerpnosnap_blendspace_2d(id: StringName, fac: Vector2, weight: float = 0.1) -> void:
 	var key := __get_key(id, &"parameters/%s/blend_position")
 	return set(key, Vector2(get(key)).lerp(fac, weight))
 

@@ -1,7 +1,32 @@
 ## Basically GodotCommons + extras for GDscript
 class_name Utils
 
+const DEFAULT_LSNAP_EDGE := 0.025
+
 #region Maths
+
+## (Blend[Lerp]snap)
+## Returns a float that is [[w]]% between [[a]] and [[b]].
+## It will snap to either extreme edge (0.0 - 1.0) when [[d]] distance is reached
+## Meant to be used with lerps used in animation blending to prevent
+## needless event callbacks.
+static func blsnap(a: float,
+				  b: float,
+				  w: float,
+				  d: float = DEFAULT_LSNAP_EDGE) -> float:
+
+	var lv: float = lerp(a, b, w)
+
+	# Distance to extreme edges
+	var da: float = abs(0.0 - lv)
+	var db: float = abs(1.0 - lv)
+
+	# Snap
+	if da < d || db < d:
+		return 0.0 if (min(da, db) == da) else 1.0
+
+	return lv
+
 
 ## Alternate smoothing function.
 ## (Decay should be a value ranging between 1 (slow) to 25 (fast))
@@ -12,6 +37,24 @@ static func fhexpdecay(a: float,
 					delta: float) -> float:
 
 	return b + (a - b) * exp(-decay * delta)
+
+
+## ([Vector2]BlendLerpSnap)
+## Applies a lerp with edge snapping on a Vector2
+## Returns a float that is [[w]]% between [[a]] and [[b]].
+## It will snap to either extreme edge (0.0 - 1.0) when [[d]] distance is reached
+## (Snapping is done independently on both axes.)
+## Meant to be used with lerps used in animation blending to prevent
+## needless event callbacks.
+static func v2blsnap(a: Vector2,
+					b: Vector2,
+					w: float,
+					d: float = DEFAULT_LSNAP_EDGE) -> Vector2:
+
+	return Vector2(
+		blsnap(a.x, b.x, w, d),
+		blsnap(a.y, b.y, w, d)
+	)
 
 
 ## Alternate smoothing function for Vector2
