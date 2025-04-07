@@ -34,11 +34,7 @@ var p_timer: Timer
 ## VFX items
 func lock(is_locked: bool) -> void:
     m_locked = is_locked
-
-    if !is_locked:
-        return
-
-    set_physics_process(false)
+    set_physics_process(!is_locked)
 
 
 ## Toggles if this emitter should be spawning VFX items
