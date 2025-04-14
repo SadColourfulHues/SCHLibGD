@@ -67,9 +67,9 @@ static func aplaywlock(animator: Animator,
 	assert(anim_len > 0.0, "aplaywlock: ID \"%s\" doesn't exist" % true_id)
 
 	if fade_not_stop:
-		animator.action_fade_except(id)
+		animator.action_fade_except()
 	else:
-		animator.action_stop_except(id)
+		animator.action_stop_except()
 
 	animator.action_fire(id)
 	lock.start(anim_len * lock_mod)
