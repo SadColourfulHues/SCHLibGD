@@ -136,16 +136,21 @@ static func xy2xz(v: Vector2, y: float = 0.0) -> Vector3:
 
 
 ## ([Transform3D]setfwd) Sets the 'forward' axis of a specified transform.
+## Set [[current_scale]] to allow scale preservation
 static func t3dsetfwd(transform: Transform3D,
 					forward: Vector3,
 					weight: float = 0.1,
-					up: Vector3 = Vector3.UP) -> Transform3D:
+					up: Vector3 = Vector3.UP,
+					current_scale: Vector3 = Vector3.ZERO) -> Transform3D:
 
 	var new_trans := transform
 	new_trans.basis.z = forward
 	new_trans.basis.y = up
 	new_trans.basis.x = up.cross(forward)
 	new_trans.basis = new_trans.basis.orthonormalized()
+
+	if !current_scale.is_zero_approx():
+		new_trans = new_trans.scaled_local(current_scale)
 
 	return transform.interpolate_with(new_trans, weight)
 
