@@ -28,7 +28,6 @@ func _enter_tree() -> void:
 
     p_mesh = draw_pass_1.duplicate()
     m_original_size = p_mesh.size
-    draw_pass_1 = p_mesh
 
     update.call_deferred()
 
@@ -39,12 +38,25 @@ func _enter_tree() -> void:
 ## Performs a manual scale update
 func update() -> void:
     if m_uniform_scale:
-        p_mesh.size = m_original_size * owner.scale.x
+        var s: float = owner.scale.x
+        p_mesh.size = m_original_size * s
+
+        __sync()
         return
 
     p_mesh.size = m_original_size * Vector2(
         owner.scale.x,
         owner.scale.z if m_scale_use_z_as_y else owner.scale.y
     )
+
+    __sync()
+
+#endregion
+
+#region Utils
+
+func __sync() -> void:
+    p_mesh.request_update()
+    set_draw_pass_mesh(0, p_mesh)
 
 #endregion
