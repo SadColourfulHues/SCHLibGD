@@ -98,6 +98,7 @@ func _physics_process(_delta: float) -> void:
         p_lock.stop()
 
         m_requested_clear = StopType.NONE
+        p_lock.paused = false
         __reset_request()
 
         return
