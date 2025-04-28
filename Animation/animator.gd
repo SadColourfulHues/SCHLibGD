@@ -26,6 +26,12 @@ var p_original_root: AnimationNodeBlendTree = null
 
 #region Functions
 
+## If set to true, the animator will stop at the current frame
+## freezing all of its processes until it gets unpaused, or deleted
+func set_paused(paused: bool) -> void:
+	Utils.atpause(self, paused)
+
+
 ## Returns the length of the specified animation track
 ## (Note: use the actual animation name -- including its library -- instead of the action key)
 func get_action_length(action_id: StringName) -> float:

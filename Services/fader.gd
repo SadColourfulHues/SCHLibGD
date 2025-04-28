@@ -40,8 +40,7 @@ func fade_out(delay: float,
             duration: float,
             callback := Callable()) -> bool:
 
-    if !__begin_tween():
-        return false
+    p_tween = Utils.twinit(self, p_tween)
 
     __delay(delay)
     __fade_out(duration)
@@ -55,8 +54,7 @@ func fade_in(delay: float,
             duration: float,
             callback := Callable()) -> bool:
 
-    if !__begin_tween():
-        return false
+    p_tween = Utils.twinit(self, p_tween)
 
     __delay(delay)
     __fade_in(duration)
@@ -71,8 +69,7 @@ func fade_out_in(fade_out_duration: float,
                 wait_delay: float = 0.0,
                 callback := Callable()) -> bool:
 
-    if !__begin_tween():
-        return false
+    p_tween = Utils.twinit(self, p_tween)
 
     __fade_out(fade_out_duration)
     __delay(wait_delay)
@@ -84,14 +81,6 @@ func fade_out_in(fade_out_duration: float,
 #endregion
 
 #region Utils
-
-func __begin_tween() -> bool:
-    if is_instance_valid(p_tween) && p_tween.is_running():
-        return false
-
-    p_tween = create_tween()
-    return true
-
 
 func __fade_out(duration: float) -> void:
     p_tween.tween_property(p_rect, ^"modulate:a", 1.0, duration) \
