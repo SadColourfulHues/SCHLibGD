@@ -37,8 +37,8 @@ var m_requested_clear := StopType.NONE
 ## (Unlike [[action_fire]], this does not guarantees that [[action_id]]
 ## will be played back, specify a callback if post-action processing is required.)
 func request_action(action_id: StringName,
-                    lock_mod: float,
-                    true_id: StringName,
+                    lock_mod: float = 1.0,
+                    true_id: StringName = &"",
                     fade_out: bool = true,
                     priority: int = 0,
                     callback := Callable()) -> bool:
