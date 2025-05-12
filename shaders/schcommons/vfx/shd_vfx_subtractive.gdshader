@@ -1,5 +1,5 @@
 shader_type spatial;
-render_mode blend_sub, cull_back, diffuse_toon, specular_toon, unshaded, shadows_disabled, depth_draw_opaque;
+render_mode blend_sub, cull_back, diffuse_toon, specular_toon, unshaded, shadows_disabled, fog_disabled, depth_draw_opaque;
 
 uniform lowp sampler2D tex_main : source_color, filter_linear_mipmap, repeat_disable;
 uniform lowp float alpha_mod: hint_range(0.0f, 2.0f) = 1.0f;
