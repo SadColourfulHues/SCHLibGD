@@ -118,7 +118,7 @@ func generate(gen_root_id: StringName = &"",
 	for part: AnimatorPart in p_parts:
 		part.apply_default_value.call_deferred(self)
 
-	# (partial-gen) join the old and new connectionss at the specified point
+	# (partial-gen) join the old and new connections at the specified point
 	if partial_mode:
 		root.connect_node(p_parts[0].m_id, root_connect_idx, root_id)
 
@@ -126,6 +126,7 @@ func generate(gen_root_id: StringName = &"",
 		p_parts.clear.call_deferred()
 
 	tree_root = root
+	clear_caches()
 
 
 ## Gets the current positional root motion

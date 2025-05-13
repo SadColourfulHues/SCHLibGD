@@ -22,6 +22,8 @@ var m_anim_lock_process_mode := Timer.TimerProcessCallback.TIMER_PROCESS_IDLE
 var p_lock: Timer
 
 var p_requested_action_callback: Callable
+var p_unfinished_animations: Array[StringName]
+
 var m_requested_action_id: StringName
 var m_requested_action_true_id: StringName
 var m_requested_action_fade: bool
@@ -77,12 +79,21 @@ func _ready() -> void:
     if Engine.is_editor_hint():
         return
 
+    # Init #
+
     p_lock = Timer.new()
     p_lock.process_callback = m_anim_lock_process_mode
     p_lock.one_shot = true
 
     add_child.call_deferred(p_lock)
     __reset_request()
+
+    # Bind #
+    animation_finished.connect(_on_animation_finished)
+
+
+func _on_animation_finished(id: StringName) -> void:
+    p_unfinished_animations.erase(id)
 
 
 func _physics_process(_delta: float) -> void:
@@ -112,8 +123,10 @@ func _physics_process(_delta: float) -> void:
     else:
         action_stop_except()
 
+    var is_doubly_backed := dbaction_is(m_requested_action_id)
+
     # Handle doubly-backed actions
-    if dbaction_is(m_requested_action_id):
+    if is_doubly_backed:
         var dbid := dbaction_get_id(m_requested_action_id, false)
         m_requested_action_true_id = m_requested_action_id
         m_requested_action_id = dbid
@@ -127,6 +140,15 @@ func _physics_process(_delta: float) -> void:
         if m_requested_action_true_id.is_empty()
         else m_requested_action_true_id
     )
+
+    # Block overlapping single playback
+    if !is_doubly_backed:
+        if p_unfinished_animations.has(m_requested_action_id):
+            action_stop(m_requested_action_id)
+            _on_animation_finished(m_requested_action_id)
+            return
+        else:
+            p_unfinished_animations.append(m_requested_action_id)
 
     action_fire(m_requested_action_id)
     p_lock.start(m_requested_action_lock_mod * get_action_length(action_id))
