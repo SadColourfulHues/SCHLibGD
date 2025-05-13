@@ -54,3 +54,24 @@ static func as3dplaywfade(sfx: AudioStreamPlayer3D,
 	return tween
 
 #endregion
+
+#region Misc
+
+## (MakeDebounceTimer)
+## Initialises a timer for debouncing purposes
+static func mdt(owner: Node,
+						 secs: float,
+						 physics: bool = false) -> Timer:
+	var timer := Timer.new()
+	timer.wait_time = secs
+	timer.one_shot = true
+
+	timer.process_callback = (
+		Timer.TIMER_PROCESS_PHYSICS if physics
+		else Timer.TIMER_PROCESS_IDLE
+	)
+
+	owner.add_child.call_deferred(timer)
+	return timer
+
+#endregion
