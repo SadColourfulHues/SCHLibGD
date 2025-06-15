@@ -22,7 +22,13 @@ uniform lowp float blur_level_borders: hint_range(0.0f, 8.0f) = 0.0f;
 
 group_uniforms Refraction;
 uniform lowp float refract_amount: hint_range(-1.0f, 1.0f) = 0.25f;
-uniform lowp float border: hint_range(0.002f, 0.3f) = 0.1f;
+uniform lowp float border: hint_range(0.002f, 0.3f) = 0.025f;
+
+group_uniforms Tint;
+uniform lowp vec4 tint_main: source_color = vec4(1.0f);
+uniform lowp vec4 tint_borders: source_color = vec4(1.0f);
+uniform lowp float tint_main_fac: hint_range(0.0f, 1.0f) = 0.5f;
+uniform lowp float tint_borders_fac: hint_range(0.0f, 1.0f) = 0.0f;
 
 varying vec2 normal;
 
@@ -53,7 +59,8 @@ void fragment()
 	lowp float blend_fac = clamp(max(0.0f, COLOR.r - smoothstep(0.9f, edges, 0.9f)) * COLOR.a, 0.0f, 1.0f);
 
 	COLOR = vec4(
-		(bg_alt * (1.0f - blend_fac)) + (bg * blend_fac),
+		(mix(bg_alt, tint_borders.rgb, tint_borders_fac) * (1.0f - blend_fac)) +
+		(mix(bg, tint_main.rgb, tint_main_fac) * blend_fac),
 		COLOR.a
 	);
 }

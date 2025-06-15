@@ -2,6 +2,14 @@
 	Utilities for shaders
 */
 
+// Shorthand for renderer check
+// Use: #ifdef IS_GLES  or  #ifdef IS_VULKAN
+#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
+	#define IS_GLES
+#else
+	#define IS_VULKAN
+#endif
+
 /// Creates a border mask with a specified size limit
 lowp float bordermask(vec2 uv, float size)
 {
@@ -41,11 +49,11 @@ lowp float fade(float depth_distance, float depth, vec2 screen_uv, vec3 vertex, 
 
 /// From: https://gist.github.com/983/e170a24ae8eba2cd174f
 /// Converts HSV to RGB
-lowp vec3 hsv2rgb(vec3 c) 
+lowp vec3 hsv2rgb(vec3 c)
 {
  	lowp vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
 	lowp vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-	
+
 	return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
 
@@ -59,6 +67,6 @@ lowp vec3 rgb2hsv(vec3 c)
 
     lowp float d = q.x - min(q.w, q.y);
     lowp float e = 1.0e-10;
-    
+
 	return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
 }
