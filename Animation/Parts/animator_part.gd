@@ -40,7 +40,7 @@ func __connect(root: AnimationNodeBlendTree,
 
 	if input is AnimatorInputAnimation:
 		# e.g. this_node_0 <- port 0 of 'this_node'
-		var input_name := "%s_in%d" % [m_id, port]
+		var input_name := &"%s_in%d" % [m_id, port]
 		root.add_node(input_name, input_node)
 		root.connect_node(m_id, port, input_name)
 
