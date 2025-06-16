@@ -3,7 +3,7 @@ class_name Repeater
 extends Node
 
 ## Attach actions that needs to be performed repeatedly here
-signal elapsed()
+signal elapsed(i: int)
 ## Called once all repetitions have been completed
 signal finished()
 
@@ -13,6 +13,7 @@ var m_destroy_on_finish := false
 var p_timer: Timer
 var p_tmp_callback: Callable
 
+var m_elapse_index := 0
 var m_times_left := 0
 
 
@@ -27,6 +28,7 @@ func start(duration: float,
     p_timer.start(duration)
     m_times_left = count
     p_tmp_callback = callback
+    m_elapse_index = 0
 
 
 ## Stops the repeater
@@ -45,10 +47,12 @@ func _ready() -> void:
 
 func _on_timer_elapsed() -> void:
     m_times_left -= 1
-    elapsed.emit()
+    elapsed.emit(m_elapse_index)
 
     if p_tmp_callback.is_valid():
-        p_tmp_callback.call()
+        p_tmp_callback.call(m_elapse_index)
+
+    m_elapse_index += 1
 
     if m_times_left > 0:
         return
