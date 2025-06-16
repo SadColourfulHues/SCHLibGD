@@ -2,7 +2,10 @@
 class_name Repeater
 extends Node
 
+## Attach actions that needs to be performed repeatedly here
 signal elapsed()
+## Called once all repetitions have been completed
+signal finished()
 
 @export
 var m_destroy_on_finish := false
@@ -52,9 +55,11 @@ func _on_timer_elapsed() -> void:
 
     if !m_destroy_on_finish:
         p_tmp_callback = Callable()
+        finished.emit()
         p_timer.stop()
         return
 
+    finished.emit()
     queue_free()
 
 #endregion
