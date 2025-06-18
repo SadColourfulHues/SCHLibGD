@@ -1,8 +1,14 @@
 ## An animation controller for 2D sprites
 ## Also adds a behaviour that automatically goes back into the
 ## idle state once a non-looping animation finishes)
+## (If a FlipSymmetry is being used with this sprite,
+## use [[flip]] instead of [[flip_h]] to apply
+## the symmetry mechanism.)
 class_name SpriteAnimator2D
 extends AnimatedSprite2D
+
+## Called when the 'flip_h' property has changed
+signal flipped()
 
 var p_lock_timer: Timer
 var p_callbacks: Array[CallbackData]
@@ -156,6 +162,17 @@ func __find(id: StringName, frame_num: int) -> int:
 var is_locked: bool :
     get():
         return !p_lock_timer.is_stopped()
+
+
+## Helper for FlipSymmetry
+## Has the same effect as setting/getting [[flip_h]]
+var flip: bool :
+    get():
+        return flip_h
+
+    set(value):
+        flip_h = value
+        flipped.emit()
 
 #endregion
 

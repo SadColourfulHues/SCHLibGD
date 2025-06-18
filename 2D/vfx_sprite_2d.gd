@@ -12,8 +12,12 @@ var m_duration: float = 0.33
 @export
 var m_destruction_delay: float = 0.3
 
+@export_subgroup("Variation")
 @export
 var m_random_rotate: bool = false
+
+@export
+var m_max_random_scale := 0.0
 
 
 #region Events
@@ -21,6 +25,17 @@ var m_random_rotate: bool = false
 func _ready() -> void:
     if m_random_rotate:
         rotation = randf() * TAU
+
+    if !is_zero_approx(m_max_random_scale):
+        assert(
+            m_max_random_scale > 0.0,
+            "VFXSprite2D: Random scale must be a higher than zero number."
+        )
+
+        var min_s: float = max(0.05, 1.0 - m_max_random_scale)
+
+        var s := randf_range(min_s, 1.0 + m_max_random_scale)
+        scale *= s
 
     # Activate child items
     for child: Node in get_children():

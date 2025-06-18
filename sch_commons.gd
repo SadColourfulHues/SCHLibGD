@@ -104,7 +104,7 @@ static func test(fn: Callable, times: int = 1) -> float:
 
 	var total := (Time.get_ticks_usec() - start) / 1_000_000.0
 
-	print("\"%s\" took %.4f s to complete %d times." % [fn.get_method(), total, times])
+	print("\"%s\" took %f seconds to complete %d times." % [fn.get_method(), total, times])
 	return total
 
 #endregion
