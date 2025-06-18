@@ -31,6 +31,24 @@ var m_initialised := false
 
 var p_sort_callback := ItemEntry.sort_callback
 
+
+#region Events
+
+func _notification(what: int) -> void:
+    if what != NOTIFICATION_PREDELETE:
+        return
+
+    # Ensure that all items are freed by deinit
+    for item: ItemEntry in p_items:
+        if item == null:
+            continue
+
+        item.free()
+
+    p_items.clear()
+
+#endregion
+
 #region Item Control
 
 ## Initialises the item bag for use [Call this at least once before doing anything.]
@@ -56,7 +74,7 @@ func add_item(id: StringName, count: int) -> bool:
         return false
 
     # Add/remove item to/from existing entry #
-    var item_idx := p_items.find_custom(__match_callback.bind(id))
+    var item_idx := __find(id)
 
     if item_idx != -1:
         # Prevent item overflow
@@ -122,7 +140,7 @@ func clear_items() -> void:
 
 ## Returns the total stored count of a specified item ID
 func get_count(id: StringName) -> int:
-    var item_idx := p_items.find_custom(__match_callback.bind(id))
+    var item_idx := __find(id)
 
     if item_idx == -1:
         return 0
@@ -137,7 +155,7 @@ func get_definition(id: StringName) -> ItemDefinition:
 
 ## Returns the item entry for a specified item ID [Returns null if the specified item ID does not have an entry in this bag.]
 func get_item_with_id(id: StringName) -> ItemEntry:
-    var item_idx := p_items.find_custom(__match_callback.bind(id))
+    var item_idx := __find(id)
 
     if item_idx == -1:
         return null
@@ -163,13 +181,20 @@ func sort_items() -> void:
 
 #region Utilities
 
-## Use with [Array::find_custom]
-func __match_callback(item: ItemEntry, id: StringName) -> bool:
-    return item != null && item.m_id == id
+func __find(id: StringName) -> int:
+    for i: int in range(p_items.size()):
+        if p_items[i] != null && p_items[i].m_id != id:
+            continue
+        return i
+    return -1
 
 
 ## Returns the first open index in the bag, [Returns -1 if the bag has no more space]
 func __get_open_idx() -> int:
-    return p_items.find_custom((func(item: ItemEntry): return item == null))
+    for i: int in range(p_items.size()):
+        if p_items[i] != null:
+            continue
+        return i
+    return -1
 
 #endregion

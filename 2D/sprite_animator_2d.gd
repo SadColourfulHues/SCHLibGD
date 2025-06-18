@@ -114,7 +114,7 @@ func register_callback(anim_id: StringName,
         "SpriteAnimator2D: Trying to add a callback to a sprite that doesn't support callbacks."
     )
 
-    var idx := p_callbacks.find_custom(__find_callback.bind(anim_id, frame_num))
+    var idx := __find(anim_id, frame_num)
 
     if idx != -1:
         if overwrite:
@@ -129,7 +129,7 @@ func register_callback(anim_id: StringName,
 func unregister_callback(anim_id: StringName,
                          frame_num: int) -> void:
 
-    var idx := p_callbacks.find_custom(__find_callback.bind(anim_id, frame_num))
+    var idx := __find(anim_id, frame_num)
 
     if idx == -1:
         return
@@ -141,8 +141,12 @@ func unregister_callback(anim_id: StringName,
 
 #region Utils
 
-func __find_callback(data: CallbackData, id: StringName, frame_to_trigger_on: int) -> bool:
-    return data.m_id == id && data.m_frame == frame_to_trigger_on
+func __find(id: StringName, frame_num: int) -> int:
+    for i: int in range(p_callbacks.size()):
+        if p_callbacks[i].m_id != id || p_callbacks[i].m_frame != frame_num:
+            continue
+        return i
+    return -1
 
 #endregion
 

@@ -3,6 +3,7 @@ class_name Utils
 
 const DEFAULT_LSNAP_EDGE := 0.025
 
+
 #region Maths
 
 ## (Blend[Lerp]snap)
@@ -348,5 +349,21 @@ static func rsyncprop2name(resource: Resource,
 
 	resource.resource_name = value
 	resource.emit_changed()
+
+#endregion
+
+#region 2D Helpers
+
+## Returns the average distance between [[b]] and [[a]]
+static func absdist2d(a: Vector2, b: Vector2) -> float:
+	var delta := a - b
+	return 0.5 * (abs(delta.x) + abs(delta.y))
+
+
+## Returns true if A is facing B
+## ((Animated)Sprite's flip_h can be used for the facing_left parameter)
+static func sideness_test_2d(xa: float, xb: float, facing_left: bool) -> bool:
+	print(sign(xb - xa), " ", (-1.0 if facing_left else 1.0) )
+	return sign(xb - xa) == (-1.0 if facing_left else 1.0)
 
 #endregion

@@ -9,8 +9,8 @@ var p_entries: Array[RecipeDefinition]
 #region Main Fns
 
 ## Returns a RecipeDefinition for a specified item ID [Returns null if nothing was found.]
-func get_definition(id: StringName) -> RecipeDefinition:
-    var idx := p_entries.find_custom(__match_callback.bind(id))
+func get_definition(item_id: StringName) -> RecipeDefinition:
+    var idx := __find(item_id)
 
     if idx == -1:
         return null
@@ -20,7 +20,7 @@ func get_definition(id: StringName) -> RecipeDefinition:
 
 ## Queries as to whether or not the specified item is craftable in the given bag
 func can_craft(item_id: StringName, bag: ItemBag, multiplier: int = 1) -> bool:
-    var idx := p_entries.find_custom(__match_callback.bind(item_id))
+    var idx := __find(item_id)
 
     if idx == -1:
         return false
@@ -30,7 +30,7 @@ func can_craft(item_id: StringName, bag: ItemBag, multiplier: int = 1) -> bool:
 
 ## Tries to craft the specified item in the given bag
 func craft(item_id: StringName, bag: ItemBag, multiplier: int = 1) -> bool:
-    var idx := p_entries.find_custom(__match_callback.bind(item_id))
+    var idx := __find(item_id)
 
     if idx == -1:
         return false
@@ -48,7 +48,11 @@ func get_definitions_using(ingredient_id: StringName) -> Array[RecipeDefinition]
 
 #region Utils
 
-func __match_callback(recipe: RecipeDefinition, id: StringName) -> bool:
-    return recipe.m_output_id == id
+func __find(id: StringName) -> int:
+    for i: int in range(p_entries.size()):
+        if p_entries[i].m_output_id != id:
+            continue
+        return i
+    return -1
 
 #endregion

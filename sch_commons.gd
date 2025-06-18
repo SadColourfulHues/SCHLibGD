@@ -74,4 +74,37 @@ static func mdt(secs: float,
 
 	return timer
 
+
+## Configures culling mechanism for 2D objects
+static func setupcull2d(check: VisibleOnScreenNotifier2D,
+						on_cull: Callable,
+						on_visible: Callable) -> void:
+
+	check.screen_entered.connect(on_visible)
+	check.screen_exited.connect(on_cull)
+
+	# Initial update
+	(func():
+		if check.is_on_screen():
+			return
+
+		on_cull.call()
+	).call_deferred()
+
+#endregion
+
+#region Testing
+
+## Tests how long a function takes to complete a specified number of times
+static func test(fn: Callable, times: int = 1) -> float:
+	var start := Time.get_ticks_usec()
+
+	for _i in range(times):
+		fn.call()
+
+	var total := (Time.get_ticks_usec() - start) / 1_000_000.0
+
+	print("\"%s\" took %.4f s to complete %d times." % [fn.get_method(), total, times])
+	return total
+
 #endregion

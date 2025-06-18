@@ -1,10 +1,11 @@
 shader_type canvas_item;
 
-uniform lowp float fac: hint_range(0.0, 1.0) = 0.5f;
-uniform lowp float delta_fac: hint_range(0.0, 1.0) = 0.5f;
 uniform lowp vec4 colour_bg : source_color = vec4(1.0f);
 uniform lowp vec4 colour_fg : source_color = vec4(1.0f);
 uniform lowp vec4 colour_delta: source_color = vec4(1.0f);
+
+instance uniform lowp float fac: hint_range(0.0, 1.0) = 0.5f;
+instance uniform lowp float delta_fac: hint_range(0.0, 1.0) = 0.5f;
 
 void fragment()
 {
