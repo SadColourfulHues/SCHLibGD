@@ -363,7 +363,6 @@ static func absdist2d(a: Vector2, b: Vector2) -> float:
 ## Returns true if A is facing B
 ## ((Animated)Sprite's flip_h can be used for the facing_left parameter)
 static func sideness_test_2d(xa: float, xb: float, facing_left: bool) -> bool:
-	print(sign(xb - xa), " ", (-1.0 if facing_left else 1.0) )
 	return sign(xb - xa) == (-1.0 if facing_left else 1.0)
 
 #endregion
