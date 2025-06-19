@@ -2,16 +2,12 @@
 class_name Repeater
 extends Node
 
-## Attach actions that needs to be performed repeatedly here
-signal elapsed(i: int)
-## Called once all repetitions have been completed
-signal finished()
-
 @export
 var m_destroy_on_finish := false
 
 var p_timer: Timer
-var p_tmp_callback: Callable
+var p_elapse_callback: Callable
+var p_finish_callback: Callable
 
 var m_elapse_index := 0
 var m_times_left := 0
@@ -20,20 +16,35 @@ var m_times_left := 0
 #region Functions
 
 ## Starts the repeater
-## (A temporary callback can provided if signals are a bit inconvenient)
+## Use the callback parameters to configure repeater actions
 func start(duration: float,
            count: int = 3,
-           callback := Callable()) -> void:
+           elapse_callback := Callable(),
+           finished_callback := Callable()) -> void:
 
     p_timer.start(duration)
     m_times_left = count
-    p_tmp_callback = callback
+
+    p_elapse_callback = elapse_callback
+    p_finish_callback = finished_callback
     m_elapse_index = 0
 
 
 ## Stops the repeater
 func stop() -> void:
+    var empty := Callable()
+    p_elapse_callback = empty
+    p_finish_callback = empty
     p_timer.stop()
+
+
+## When enabled, the repeater will run its timer in the physics tick
+func set_process_in_physics(physics: bool) -> void:
+    p_timer.process_callback = (
+        Timer.TIMER_PROCESS_PHYSICS
+        if physics else
+        Timer.TIMER_PROCESS_IDLE
+    )
 
 #endregion
 
@@ -47,10 +58,9 @@ func _ready() -> void:
 
 func _on_timer_elapsed() -> void:
     m_times_left -= 1
-    elapsed.emit(m_elapse_index)
 
-    if p_tmp_callback.is_valid():
-        p_tmp_callback.call(m_elapse_index)
+    if p_elapse_callback.is_valid():
+        p_elapse_callback.call(m_elapse_index)
 
     m_elapse_index += 1
 
@@ -58,12 +68,15 @@ func _on_timer_elapsed() -> void:
         return
 
     if !m_destroy_on_finish:
-        p_tmp_callback = Callable()
-        finished.emit()
+        if p_finish_callback.is_valid():
+            p_finish_callback.call()
+
         p_timer.stop()
         return
 
-    finished.emit()
+    if p_finish_callback.is_valid():
+        p_finish_callback.call()
+
     queue_free()
 
 #endregion
