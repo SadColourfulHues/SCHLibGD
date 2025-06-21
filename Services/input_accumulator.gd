@@ -1,15 +1,21 @@
 ## An optional Autoload service that can be used to track the state of certain actions
 extends Node
 
+## Triggered when an action has been pressed
 signal pressed(action_id: StringName)
-signal tick(action_id: StringName)
+## Triggered when an action has been held
+signal tick(action_id: StringName, hold_ticks: float)
+## Triggered when an action has been released
 signal released(action_id: StringName)
 
-@export
-var m_process_in_physics := false
+## Repeats the current action's state event until unheld (or expires)
+const HOLD_REPEAT := HoldMode.REPEAT
+## Triggers the action's tick event
+const HOLD_TICK := HoldMode.TICK
 
-var m_block_requested: bool
-var p_actions: Dictionary[StringName, Data]
+var p_actions: Array[Action]
+
+var m_signal := ProcessSignal.NONE
 
 
 #region Functions
@@ -22,56 +28,76 @@ func set_process_in_physics(physics_mode: bool = true) -> void:
 
 
 ## Returns true if the given action ID is being pressed
-## (this method assumes that the action has already been registered using [track])
+## (Returns false if the action has not been registered)
 func is_pressed(action_id: StringName) -> bool:
-    return p_actions[action_id].m_active
+    for action: Action in p_actions:
+        if action.m_id != action_id:
+            continue
+
+        if action.is_held:
+            return action.m_held_state
+
+        return action.m_active
+
+    return false
 
 
-## Returns the amount of time (in seconds) an action is held
-func get_press_duration(action_id: StringName) -> float:
-    if !p_actions.has(action_id):
-        return 0.0
+## Returns the amount of ticks an action has been held
+func get_hold_duration(action_id: StringName) -> float:
+    for action: Action in p_actions:
+        if action.m_id != action_id:
+            continue
 
-    var action := p_actions[action_id]
+        return action.m_hold_ticks
 
-    if !action.m_active:
-        return 0.0
-
-    return action.get_press_duration()
+    return 0.0
 
 
 ## Registers an action to be observed for each process tick
-## (If fresh checks are disabled, this action can be state-blocked indefinitely.)
 func track(action_id: StringName,
-        do_fresh_checks: bool = true,
-        check_type: CheckType = CheckType.BOTH,
-        input_window: float = 0.33) -> void:
+           max_hold_duration: float = 0.15,
+           hold_mode := HOLD_REPEAT) -> void:
 
-    if p_actions.has(action_id):
-        return
-
-    p_actions[action_id] = Data.new(input_window, do_fresh_checks, check_type)
+    p_actions.append(Action.new(action_id,  max_hold_duration, hold_mode))
 
 
 ## Unregisters an action from being observed
 func untrack(action_id: StringName) -> void:
-    if !p_actions.has(action_id):
+    var i: int = 0
+
+    for action: Action in p_actions:
+        if action.m_id != action_id:
+            i += 1
+            continue
+
+        p_actions.remove_at(i)
         return
 
-    p_actions[action_id].free()
-    p_actions.erase(action_id)
+
+## Clears all tracked actions
+func clear() -> void:
+    for action: Action in p_actions:
+        action.free()
+
+    p_actions.clear()
 
 
-## Prevents the current input state from changing in the current evaluation
-func block() -> void:
-    m_block_requested = true
+## Holds the currently processing action
+func hold() -> void:
+    m_signal = ProcessSignal.HOLD
+
+
+## Releases the hold on the currently processing action
+func unhold() -> void:
+    m_signal = ProcessSignal.UNHOLD
 
 #endregion
 
 #region Events
 
-func _ready() -> void:
-    set_process_in_physics(m_process_in_physics)
+func _init() -> void:
+    set_process(true)
+    set_physics_process(false)
 
 
 func _process(_delta: float) -> void:
@@ -86,88 +112,129 @@ func _physics_process(_delta: float) -> void:
 #region Utils
 
 func __process_main() -> void:
-    for action_id: StringName in p_actions:
-        var input_active := Input.is_action_pressed(action_id)
-        var state := p_actions[action_id]
+    var active_signal: ProcessSignal
+    var delta := get_process_delta_time()
 
-        # Pressed/Tick/Released Events #
-        if !state.m_active && input_active:
-            state.mark_press_start()
-            pressed.emit(action_id)
+    for action: Action in p_actions:
+        var next_is_pressed := Input.is_action_pressed(action.m_id)
 
-        elif state.m_active && input_active:
-            tick.emit(action_id)
+        # Held Action #
 
-        elif state.m_active && !input_active:
-            released.emit(action_id)
+        if action.is_held:
+            match action.m_hold_mode:
+                HoldMode.TICK:
+                    tick.emit(action.m_id, action.m_hold_ticks)
 
-        # Allow certain events to be held until a condition is satisfied
-        var was_blocked := m_block_requested
-        m_block_requested = false
+                HoldMode.REPEAT:
+                    if action.m_held_state:
+                        pressed.emit(action.m_id)
+                    else:
+                        released.emit(action.m_id)
 
-        # but also prevent it from being held for too long
-        if was_blocked && state.is_fresh(input_active):
+            action.m_hold_ticks += delta
             continue
 
-        # Update value #
-        state.m_active = input_active
+        # Normal Action Processing #
 
+        if next_is_pressed && !action.m_pressed:
+            action.mark_pressed()
+            pressed.emit(action.m_id)
+
+        elif next_is_pressed && action.m_pressed:
+            tick.emit(action.m_id, action.m_hold_ticks)
+
+        elif !next_is_pressed && action.m_pressed:
+            action.mark_released()
+            released.emit(action.m_id)
+
+        # Handle Signals #
+
+        active_signal = m_signal
+        m_signal = ProcessSignal.NONE
+
+        match active_signal:
+            ProcessSignal.HOLD:
+                action.request_hold()
+
+            ProcessSignal.UNHOLD:
+                action.m_is_held = false
 
 #endregion
 
-#region Data Struct
+#region Enums
 
-enum CheckType
+enum ProcessSignal
 {
-    PRESS,
-    RELEASE,
-    BOTH
+    NONE,
+    HOLD,
+    UNHOLD,
 }
 
-class Data extends Object:
-    var m_active: bool
-    var m_last: int
-    var m_input_window: float
-    var m_do_fresh_checks: bool
-    var m_check_type: CheckType
+enum HoldMode
+{
+    REPEAT,
+    TICK,
+}
 
-    func _init(window: float,
-            do_fresh_checks: bool,
-            check_type: CheckType) -> void:
+#endregion
 
-        m_active = false
+#region Data Structs
 
-        m_do_fresh_checks = do_fresh_checks
-        m_check_type = check_type
-        m_input_window = window
-        m_last = 0
+class Action extends Object:
+    var m_id: StringName
+    var m_pressed: bool
 
+    var m_held_state: bool
+    var m_hold_mode: HoldMode
+    var m_hold_ticks: float
 
-    func mark_press_start() -> void:
-        m_last = Time.get_ticks_msec()
-
-
-    func is_fresh(active: bool) -> bool:
-        if !m_do_fresh_checks:
-            return true
-
-        # State-dependent guards #
-        match m_check_type:
-            CheckType.PRESS:
-                # Blocks checks on release updates #
-                if m_active && !active:
-                    return true
-
-            CheckType.RELEASE:
-                # Blocks checks on press updates #
-                if !m_active && active:
-                    return true
-
-        return get_press_duration() <= m_input_window
+    var m_max_hold_duration: float
+    var m_is_held: bool
 
 
-    func get_press_duration() -> float:
-        return (Time.get_ticks_msec() - m_last) * 0.001
+    func _init(id: StringName,
+               max_hold_duration: float,
+               hold_mode: HoldMode) -> void:
 
+        m_id = id
+        m_pressed = false
+
+        m_held_state = false
+        m_hold_mode = hold_mode
+        m_hold_ticks = 0.0
+
+        m_max_hold_duration = max_hold_duration
+        m_is_held = false
+
+
+    func mark_pressed() -> void:
+        m_pressed = true
+        m_held_state = false
+        m_is_held = false
+
+        m_hold_ticks = 0.0
+
+
+    func mark_released() -> void:
+        m_pressed = false
+        m_is_held = false
+
+
+    func request_hold() -> void:
+        if hold_remaining <= 0.0:
+            return
+
+        m_held_state = m_pressed
+        m_is_held = true
+
+
+    var hold_remaining: float :
+        get():
+            return max(0.0, m_max_hold_duration - m_hold_ticks)
+
+
+    var is_held: bool :
+        get():
+            return m_is_held && hold_remaining > 0.0
 
 #endregion
