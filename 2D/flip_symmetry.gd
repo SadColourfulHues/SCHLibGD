@@ -15,10 +15,14 @@ extends Marker2D
 @export_tool_button("Rebuild Affected List", "rebuild")
 var __editor_rebuild_btn = SCHUtils.test.bind(rebuild)
 
+@export_subgroup("Configuration")
 ## The max depth of the affected build list
 ## (Try to keep this as low as humanly possible to ensure optimal performance.)
 @export
 var m_max_build_recursion_depth := 3
+
+@export
+var m_reset_interpolation := true
 
 var m_flipped: bool = false
 var p_affected: Array[Node2D]
@@ -31,6 +35,7 @@ var m_tick: float = 0.0
 
 func _ready() -> void:
     rebuild()
+
     var parent: Node = get_parent()
 
     if !is_instance_valid(parent):
@@ -86,6 +91,7 @@ func rebuild() -> void:
 ## (Called automatically when the property [[flipped]] is modified
 func apply() -> void:
     var flipped_fac := -1.0 if m_flipped else 1.0
+    var is_flipped := flipped_fac == -1.0
 
     for node: Node2D in p_affected:
         var ogsign: float = node.get_meta(&"ogsign", 1.0)
@@ -95,6 +101,18 @@ func apply() -> void:
             * ogsign
             * flipped_fac
         )
+
+        match node.get_meta(&"type", 0):
+            1:
+                node.flip = is_flipped
+
+            2:
+                node.flip_h = is_flipped
+
+        if !m_reset_interpolation:
+            continue
+
+        node.reset_physics_interpolation()
 
 #endregion
 
@@ -124,9 +142,16 @@ func __push_to_affected_list(base: Node, level: int) -> void:
         return
 
     base.set_meta(&"ogsign", sign(base.position.x) as float)
+    p_affected.append(base)
+
+    if base is SpriteAnimator2D:
+        base.set_meta(&"type", 1)
+    elif base is Sprite2D || base is AnimatedSprite2D:
+        base.set_meta(&"type", 2)
+    else:
+        base.set_meta(&"type", 0)
 
     for child: Node in base.get_children():
-        p_affected.append(base)
         __push_to_affected_list(child, level - 1)
 
 #endregion
