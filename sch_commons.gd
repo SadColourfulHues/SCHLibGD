@@ -108,3 +108,41 @@ static func test(fn: Callable, times: int = 1) -> float:
 	return total
 
 #endregion
+
+#region Tween Effects
+
+## Fluctuates a sprite using a tween
+## (similar to effects found in old video games for items that are about to vanish)
+static func twfluctuate2d(tween: Tween,
+						target: CanvasItem,
+						times: int,
+						t_in: float = 0.15,
+						t_out: float = 0.25) -> void:
+
+	for _i: int in range(times):
+		tween.tween_interval(t_in)
+		tween.tween_callback(target.hide)
+		tween.tween_interval(t_out)
+		tween.tween_callback(target.show)
+
+
+## Fluctuates a sprite using a tween
+## (Similar to twfluctuate, but the intervals accelerates as it reaches the end)
+static func twfluctuateacc2d(tween: Tween,
+						  target: CanvasItem,
+						  times: int,
+						  t_in: float = 0.15,
+						  t_out: float = 0.25) -> void:
+
+	var fac_mod := 1.0 / float(times)
+	var fac := 1.0
+
+	for _i: int in range(times):
+		tween.tween_interval(t_in)
+		tween.tween_callback(target.hide)
+		tween.tween_interval(fac * t_out)
+		tween.tween_callback(target.show)
+
+		fac = max(0.0, fac - fac_mod)
+
+#endregion
