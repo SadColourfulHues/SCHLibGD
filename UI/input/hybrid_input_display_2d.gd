@@ -28,6 +28,8 @@ func _enter_tree() -> void:
     p_mouse_and_keys_view.visible = m_mouse_and_key_default
     p_controller_view.visible = !m_mouse_and_key_default
 
+    _on_joy_count_changed.call_deferred(0, false)
+
     # Bind #
     Input.joy_connection_changed.connect(_on_joy_count_changed)
 
