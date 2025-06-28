@@ -3,13 +3,13 @@
 ## count
 @tool
 class_name HybridInputDisplay2D
-extends Control
+extends MarginContainer
 
 @export
 var m_mouse_and_key_default := true
 
-var p_controller_view: Control
-var p_mouse_and_keys_view: Control
+var p_controller_view: MarginContainer
+var p_mouse_and_keys_view: MarginContainer
 
 
 #region Events
@@ -53,7 +53,7 @@ func __create_if_unavailable(node_name: String) -> void:
     if has_node(node_name):
         return
 
-    var node := Control.new()
+    var node := MarginContainer.new()
     node.name = node_name
 
     add_child(node)
