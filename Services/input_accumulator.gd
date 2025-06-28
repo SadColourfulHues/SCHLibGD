@@ -16,6 +16,7 @@ const HOLD_TICK := HoldMode.TICK
 var p_actions: Array[Action]
 
 var m_signal := ProcessSignal.NONE
+var m_sleep := false
 
 
 #region Functions
@@ -51,6 +52,12 @@ func get_hold_duration(action_id: StringName) -> float:
         return action.m_hold_ticks
 
     return 0.0
+
+
+## Stops processing for the current frame
+## (Useful for UIs -- e.g. handling a button press that returns the game to a resumed state.)
+func sleep() -> void:
+    m_sleep = true
 
 
 ## Registers an action to be observed for each process tick
@@ -116,6 +123,10 @@ func __process_main() -> void:
     var delta := get_process_delta_time()
 
     for action: Action in p_actions:
+        if m_sleep:
+            m_sleep = false
+            return
+
         var next_is_pressed := Input.is_action_pressed(action.m_id)
 
         # Held Action #
