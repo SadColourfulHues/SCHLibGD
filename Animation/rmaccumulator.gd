@@ -42,13 +42,15 @@ func update() -> void:
 
 ## Applies accumulated root motion since the last [[apply]]
 func apply() -> void:
-    p_body.quaternion *= m_rotation_accumulated
+    if m_rotation_accumulated.is_finite():
+        p_body.quaternion *= m_rotation_accumulated
 
     if m_lock_xz:
         m_motion_accumulated.y = 0.0
 
-    p_body.velocity = m_motion_accumulated
-    p_body.move_and_slide()
+    if m_motion_accumulated.is_finite():
+        p_body.velocity = m_motion_accumulated
+        p_body.move_and_slide()
 
     clear()
 
