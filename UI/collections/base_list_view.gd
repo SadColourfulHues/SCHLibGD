@@ -1,6 +1,7 @@
 @warning_ignore_start("unused_parameter")
 
 ## A base-class for list-like UIs
+@abstract
 class_name BaseListView
 extends Control
 
@@ -10,26 +11,41 @@ signal list_selection_changed(index: int)
 @export
 var p_pkg_cell: PackedScene
 
-@export
 var p_viewport: Control
-
 var m_last_cell_count: int
 
 ## The currently-selected index (It returns -1 if nothing is selected.)
 var m_selected_index: int = -1
 
+#region Data Provider
+
+## The return value of this function determines the number of cells to be created
+## When the [regenerate] function is called.
+@abstract
+func _list_get_count() -> int;
+
+
+## The return value of this function determines the data to be used when updating
+## the cell at the specified index
+@abstract
+func _list_get_data(i: int) -> Variant;
+
+#endregion
 
 #region Events
 
 func _enter_tree() -> void:
-    if !is_instance_valid(p_pkg_cell):
-        print_rich("[color=@FF0]BaseListView: invalid configuration -- no cell template assigned [/color]")
-        return
+    assert(
+        is_instance_valid(p_pkg_cell),
+        "BaseListView: invalid configuration -- no cell template assigned"
+    )
 
-    if !is_instance_valid(p_viewport):
-        print_rich("[color=@FF0]BaseListView: invalid configuration -- no viewport assigned [/color]")
-        return
+    assert(
+        has_node(^"%Viewport"),
+        "BaseListView: a list view must have a scene-unique node called \"Viewport\""
+    )
 
+    p_viewport = get_node(^"%Viewport")
     m_last_cell_count = 0
 
 
@@ -42,23 +58,13 @@ func _on_cell_activated(index: int) -> void:
 
 #endregion
 
-
-#region Data Provider
-
-## The return value of this function determines the number of cells to be created
-## When the [regenerate] function is called.
-func _list_get_count() -> int:
-    return 0
-
-
-## The return value of this function determines the data to be used when updating
-## the cell at the specified index
-func _list_get_data(i: int) -> Variant:
-    return null
-
-#endregion
-
 #region List
+
+## A processing method that is called whenever the list is updated
+## [[is_update]] is true when cells have been regenerated
+func _list_cell_updated(is_update: bool, index: int, data, cell) -> void:
+    pass
+
 
 ## Destroys all active cells in the list
 func clear() -> void:
@@ -77,7 +83,10 @@ func clear() -> void:
 ## the contents of existing cells.)
 func regenerate() -> void:
     clear()
+
     var count := _list_get_count()
+
+    m_selected_index = -1
     m_last_cell_count = count
 
     for i: int in range(count):
@@ -85,8 +94,12 @@ func regenerate() -> void:
         var cell: BaseListCell = p_pkg_cell.instantiate()
         p_viewport.add_child(cell)
 
+        var data: Variant = _list_get_data(i)
+
         cell._cell_init()
-        cell._cell_configure(_list_get_data(i))
+        cell._cell_configure(data)
+
+        _list_cell_updated(false, i, data, cell)
 
         # Bind
         list_selection_changed.connect(cell._on_list_selection_changed)
@@ -97,8 +110,19 @@ func regenerate() -> void:
 ## (Prefer this over [regenerate] if the cell count has not changed.)
 func update() -> void:
     for i: int in range(m_last_cell_count):
-        p_viewport.get_child(i) \
-            ._cell_configure(_list_get_data(i))
+        var data: Variant = _list_get_data(i)
+        var cell: BaseListCell = p_viewport.get_child(i)
 
+        _list_cell_updated(true, i, data, cell)
+
+
+## Automatically picks [[regenerate]] or [[update]] depending on
+## whether or not the cell count has changed
+func refresh() -> void:
+    if _list_get_count() == m_last_cell_count:
+        update()
+        return
+
+    regenerate()
 
 #endregion
