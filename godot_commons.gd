@@ -220,6 +220,7 @@ static func atgetnode(tree: AnimationTree,
 	return root.get_node(node_name)
 
 
+## (Note: for better syncing, prefer using [[RootMotionAccumulator]])
 ## Returns the root motion 'velocity' of the specified [tree] relative to the [target]'s current rotation.
 static func atgetrootmotion(target: Node3D,
 							tree: AnimationTree,

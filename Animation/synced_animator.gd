@@ -4,7 +4,7 @@
 ## Use the [[request_action]] and [[request_clear]] methods
 ## to control animation playback.
 @tool
-class_name ActionStateAnimator
+class_name SyncedAnimator
 extends Animator
 
 ## The type of action clear to use in the next frame

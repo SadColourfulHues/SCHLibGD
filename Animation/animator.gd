@@ -18,8 +18,8 @@ var m_bl_snap_override := Utils.DEFAULT_LSNAP_EDGE
 
 var p_dbaction_state: Dictionary[StringName, bool]
 
-var p_key_paths: Dictionary[StringName, StringName]
-var p_action_lengths: Dictionary[StringName, float]
+var p_paths: Dictionary[StringName, StringName]
+var p_actlens: Dictionary[StringName, float]
 
 var p_original_root: AnimationNodeBlendTree = null
 
@@ -35,7 +35,7 @@ func set_paused(paused: bool) -> void:
 ## Returns the length of the specified animation track
 ## (Note: use the actual animation name -- including its library -- instead of the action key)
 func get_action_length(action_id: StringName) -> float:
-	var cached_length: float = p_action_lengths.get(action_id, -1.0)
+	var cached_length: float = p_actlens.get(action_id, -1.0)
 
 	if cached_length != -1.0:
 		return cached_length
@@ -45,7 +45,7 @@ func get_action_length(action_id: StringName) -> float:
 		return 0.0
 
 	var length := get_animation(action_id).length
-	p_action_lengths[action_id] = length
+	p_actlens[action_id] = length
 
 	return length
 
@@ -129,6 +129,7 @@ func generate(gen_root_id: StringName = &"",
 	clear_caches()
 
 
+## @deprecated: use [[RootMotionAccumulator]] for better root-motion syncing!
 ## Gets the current positional root motion
 func get_root_motion(body: Node3D, delta: float, apply_rotation: bool = true) -> Vector3:
 	return Utils.atgetrootmotion(body, self, delta, apply_rotation)
@@ -138,7 +139,7 @@ func get_root_motion(body: Node3D, delta: float, apply_rotation: bool = true) ->
 func action_fade_except(action_id: StringName = &"") -> void:
 	var path = &"" if action_id.is_empty() else __get_key(action_id, &"parameters/%s/request")
 
-	for id: StringName in p_key_paths.values():
+	for id: StringName in p_paths.values():
 		if !id.ends_with(&"request"):
 			continue
 
@@ -152,7 +153,7 @@ func action_fade_except(action_id: StringName = &"") -> void:
 func action_stop_except(action_id: StringName = &"") -> void:
 	var path = &"" if action_id.is_empty() else __get_key(action_id, &"parameters/%s/request")
 
-	for id: StringName in p_key_paths.values():
+	for id: StringName in p_paths.values():
 		if !id.ends_with(&"request"):
 			continue
 
@@ -166,14 +167,16 @@ func action_stop_except(action_id: StringName = &"") -> void:
 
 #region Utils
 
-func __get_key(property_id: StringName, path_format: StringName) -> StringName:
-	if !p_key_paths.has(property_id):
-		var path := StringName(path_format % property_id)
-		p_key_paths[property_id] = path
+func __get_key(id: StringName, format: StringName) -> StringName:
+	var stored: StringName = p_paths.get(id, &"")
 
-		return path
+	if stored != &"":
+		return stored
 
-	return p_key_paths[property_id]
+	var path = format % id
+	p_paths[id] = path
+
+	return path
 
 
 func __editor_generate_tree_action() -> void:
