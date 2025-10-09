@@ -156,6 +156,11 @@ static func t3dsetfwd(transform: Transform3D,
 	return transform.interpolate_with(new_trans, weight)
 
 
+## Returns a new [[Vector3]] with the X and Z values of [[b]] and the Y of [[a]]
+static func xz(a: Vector3, b: Vector3) -> Vector3:
+	return Vector3(b.x, a.y, b.z)
+
+
 ## Linearly interpolates the XZ members of two Vector3s
 static func xzlerp(a: Vector3, b: Vector3, fac: float) -> Vector3:
 	return Vector3(
