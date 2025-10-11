@@ -55,6 +55,12 @@ func apply() -> void:
     clear()
 
 
+## Resets the rotational root motion state and uses the current rotation as a base
+func clear_rotation() -> void:
+    m_rotation_accumulated = Quaternion.IDENTITY
+    m_last_rotation = p_body.quaternion
+
+
 ## Clears accumulated root motion data
 func clear() -> void:
     m_motion_accumulated = Vector3.ZERO

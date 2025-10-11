@@ -21,6 +21,8 @@ var p_sm: AnimationNodeStateMachine
 var p_playback: AnimationNodeStateMachinePlayback
 
 var p_transition_fade_curve: Curve = null
+var m_transition_fade_in := 0.15
+var m_transition_fade_out := 0.25
 var m_transition_switch_mode := SM_INSTANT
 var m_transition_advance_mode := AM_NORMAL
 var m_transition_reset := false
@@ -81,6 +83,13 @@ func transition_auto_advance(yes: bool) -> StateAnimator:
 	return self
 
 
+## Sets the fade in/out times used by subsequent 'connect_*' calls
+func transition_fade_time(in_time := 0.15, out_time := 0.25) -> StateAnimator:
+	m_transition_fade_in = in_time
+	m_transition_fade_out = out_time
+	return self
+
+
 ## Sets the fade curve of transitions used by subsequent 'connect_*' calls
 func transition_curve(curve: Curve) -> StateAnimator:
 	p_transition_fade_curve = curve
@@ -97,7 +106,6 @@ func reset() -> void:
 
 ## Quickly sets up a single root -> actions tree using the specified animations
 func fast_root_setup(return_id: StringName,
-					 fade_time: float,
 					 instant_mode: bool,
 					 ...action_ids: Array) -> void:
 
@@ -106,8 +114,8 @@ func fast_root_setup(return_id: StringName,
 	actual_array.append_array(action_ids)
 
 	push_animations(actual_array)
-	connect_multi(return_id, fade_time, actual_array)
-	connect_return(return_id, fade_time, instant_mode, actual_array)
+	connect_multi(return_id, actual_array)
+	connect_return(return_id, instant_mode, actual_array)
 
 	connect_entry(return_id)
 
@@ -187,24 +195,22 @@ func push_blend2(id: StringName,
 
 ## Adds a single transition from one specified node to another
 func connect_single(id: StringName,
-					to: StringName,
-					fade_time: float = 0.15) -> void:
+					to: StringName) -> void:
 
 	assert(p_sm.has_node(id), "StateAnimator: invalid node ID \"%s\"" % id)
 	assert(p_sm.has_node(to), "StateAnimator: invalid target ID \"%s\"" % to)
 
-	var transition := __make_transition(fade_time)
+	var transition := __make_transition(m_transition_fade_in)
 	p_sm.add_transition(id, to, transition)
 
 
 ## Adds transitions from the specified node to a list of target nodes
 func connect_multi(id: StringName,
-				   fade_time: float,
 				   to: Array[StringName]) -> void:
 
 	assert(p_sm.has_node(id), "StateAnimator: invalid node ID \"%s\"" % id)
 
-	var transition := __make_transition(fade_time)
+	var transition := __make_transition(m_transition_fade_in)
 
 	for node_id: StringName in to:
 		assert(p_sm.has_node(node_id), &"StateAnimator: invalid target ID \"%s\"" % node_id)
@@ -213,15 +219,15 @@ func connect_multi(id: StringName,
 
 ## Adds a "return" transition from the specified nodes to the target node
 func connect_return(target: StringName,
-					fade_time: float,
 					instant_mode: bool,
 					from: Array[StringName]) -> void:
 
 	assert(p_sm.has_node(target), "StateAnimator: invalid target ID \"%s\"" % target)
 
-	var transition := __make_transition(fade_time)
+	var transition := __make_transition(m_transition_fade_out)
 	transition.reset = m_transition_reset
 	transition.advance_mode = AM_AUTO if instant_mode else AM_NORMAL
+	transition.switch_mode = SM_INSTANT if !instant_mode else SM_AT_END
 
 	for node_id: StringName in from:
 		assert(p_sm.has_node(node_id), "StateAnimator: invalid node ID \"%s\"" % node_id)
